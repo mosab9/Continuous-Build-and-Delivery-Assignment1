@@ -53,6 +53,9 @@ class OrderIntegrationTest {
     @BeforeEach
     void setUp() {
         mockMvc = MockMvcBuilders.webAppContextSetup(webApplicationContext).build();
+        // Clean up any data from previous test runs (e.g., Karate tests)
+        orderRepository.deleteAll();
+        customerRepository.deleteAll();
 
         testCustomer = Customer.builder()
                 .firstName("John")

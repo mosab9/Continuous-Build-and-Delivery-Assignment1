@@ -4,22 +4,14 @@ Feature: Order API Tests
     * url baseUrl
     * def ordersPath = '/api/orders'
     * def customersPath = '/api/customers'
-
-    # Create a customer for order tests
-    * def createCustomer =
-      """
-      function() {
-        var uniqueEmail = 'order-test-' + java.util.UUID.randomUUID() + '@karate-test.com';
-        var result = karate.call('classpath:karate/helpers/create-customer.feature', { email: uniqueEmail });
-        return result.customerId;
-      }
-      """
+    # Generate unique email suffix for each test run
+    * def uuid = function(){ return java.util.UUID.randomUUID() + '' }
 
   @smoke
   Scenario: Create an order successfully
     # First create a customer
     Given path customersPath
-    And request { firstName: 'Order', lastName: 'Customer', email: 'order-create@karate-test.com' }
+    And request { firstName: 'Order', lastName: 'Customer', email: '#("order-create-" + uuid() + "@test.com")' }
     When method post
     Then status 201
     * def customerId = response.id
@@ -77,7 +69,7 @@ Feature: Order API Tests
   Scenario: Create order with empty items returns 400
     # First create a customer
     Given path customersPath
-    And request { firstName: 'Empty', lastName: 'Items', email: 'empty-items@karate-test.com' }
+    And request { firstName: 'Empty', lastName: 'Items', email: '#("empty-items-" + uuid() + "@test.com")' }
     When method post
     Then status 201
     * def customerId = response.id
@@ -92,7 +84,7 @@ Feature: Order API Tests
   Scenario: Get order by ID
     # Create customer and order
     Given path customersPath
-    And request { firstName: 'GetOrder', lastName: 'Test', email: 'get-order@karate-test.com' }
+    And request { firstName: 'GetOrder', lastName: 'Test', email: '#("get-order-" + uuid() + "@test.com")' }
     When method post
     Then status 201
     * def customerId = response.id
@@ -134,7 +126,7 @@ Feature: Order API Tests
   Scenario: Get all orders with pagination
     # Create customer and orders
     Given path customersPath
-    And request { firstName: 'AllOrders', lastName: 'Test', email: 'all-orders@karate-test.com' }
+    And request { firstName: 'AllOrders', lastName: 'Test', email: '#("all-orders-" + uuid() + "@test.com")' }
     When method post
     Then status 201
     * def customerId = response.id
@@ -177,7 +169,7 @@ Feature: Order API Tests
   Scenario: Update order status from PENDING to CONFIRMED
     # Create customer and order
     Given path customersPath
-    And request { firstName: 'Status', lastName: 'Update', email: 'status-update@karate-test.com' }
+    And request { firstName: 'Status', lastName: 'Update', email: '#("status-update-" + uuid() + "@test.com")' }
     When method post
     Then status 201
     * def customerId = response.id
@@ -205,7 +197,7 @@ Feature: Order API Tests
   Scenario: Update order status from PENDING to CANCELLED
     # Create customer and order
     Given path customersPath
-    And request { firstName: 'Cancel', lastName: 'Order', email: 'cancel-order@karate-test.com' }
+    And request { firstName: 'Cancel', lastName: 'Order', email: '#("cancel-order-" + uuid() + "@test.com")' }
     When method post
     Then status 201
     * def customerId = response.id
@@ -232,7 +224,7 @@ Feature: Order API Tests
   Scenario: Cannot revert CONFIRMED order to PENDING
     # Create customer and order
     Given path customersPath
-    And request { firstName: 'Invalid', lastName: 'Transition', email: 'invalid-transition@karate-test.com' }
+    And request { firstName: 'Invalid', lastName: 'Transition', email: '#("invalid-transition-" + uuid() + "@test.com")' }
     When method post
     Then status 201
     * def customerId = response.id
@@ -265,7 +257,7 @@ Feature: Order API Tests
   Scenario: Cannot update cancelled order
     # Create customer and order
     Given path customersPath
-    And request { firstName: 'Cancelled', lastName: 'Update', email: 'cancelled-update@karate-test.com' }
+    And request { firstName: 'Cancelled', lastName: 'Update', email: '#("cancelled-update-" + uuid() + "@test.com")' }
     When method post
     Then status 201
     * def customerId = response.id
@@ -298,7 +290,7 @@ Feature: Order API Tests
   Scenario: Update order items and recalculate total
     # Create customer and order
     Given path customersPath
-    And request { firstName: 'Update', lastName: 'Items', email: 'update-items@karate-test.com' }
+    And request { firstName: 'Update', lastName: 'Items', email: '#("update-items-" + uuid() + "@test.com")' }
     When method post
     Then status 201
     * def customerId = response.id
@@ -333,7 +325,7 @@ Feature: Order API Tests
   Scenario: Cannot update cancelled order items
     # Create customer and order
     Given path customersPath
-    And request { firstName: 'Cancelled', lastName: 'Items', email: 'cancelled-items@karate-test.com' }
+    And request { firstName: 'Cancelled', lastName: 'Items', email: '#("cancelled-items-" + uuid() + "@test.com")' }
     When method post
     Then status 201
     * def customerId = response.id
@@ -371,7 +363,7 @@ Feature: Order API Tests
   Scenario: Delete pending order successfully
     # Create customer and order
     Given path customersPath
-    And request { firstName: 'Delete', lastName: 'Pending', email: 'delete-pending@karate-test.com' }
+    And request { firstName: 'Delete', lastName: 'Pending', email: '#("delete-pending-" + uuid() + "@test.com")' }
     When method post
     Then status 201
     * def customerId = response.id
@@ -401,7 +393,7 @@ Feature: Order API Tests
   Scenario: Cannot delete confirmed order
     # Create customer and order
     Given path customersPath
-    And request { firstName: 'Delete', lastName: 'Confirmed', email: 'delete-confirmed@karate-test.com' }
+    And request { firstName: 'Delete', lastName: 'Confirmed', email: '#("delete-confirmed-" + uuid() + "@test.com")' }
     When method post
     Then status 201
     * def customerId = response.id
@@ -433,7 +425,7 @@ Feature: Order API Tests
   Scenario: Delete cancelled order successfully
     # Create customer and order
     Given path customersPath
-    And request { firstName: 'Delete', lastName: 'Cancelled', email: 'delete-cancelled@karate-test.com' }
+    And request { firstName: 'Delete', lastName: 'Cancelled', email: '#("delete-cancelled-" + uuid() + "@test.com")' }
     When method post
     Then status 201
     * def customerId = response.id

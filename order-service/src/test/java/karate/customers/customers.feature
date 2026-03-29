@@ -3,17 +3,20 @@ Feature: Customer API Tests
   Background:
     * url baseUrl
     * def customersPath = '/api/customers'
+    # Generate unique email suffix for each test run
+    * def uuid = function(){ return java.util.UUID.randomUUID() + '' }
 
   @smoke
   Scenario: Create a new customer successfully
+    * def testEmail = 'john.doe-' + uuid() + '@karate-test.com'
     Given path customersPath
-    And request { firstName: 'John', lastName: 'Doe', email: 'john.doe@karate-test.com' }
+    And request { firstName: 'John', lastName: 'Doe', email: '#(testEmail)' }
     When method post
     Then status 201
     And match response.id == '#number'
     And match response.firstName == 'John'
     And match response.lastName == 'Doe'
-    And match response.email == 'john.doe@karate-test.com'
+    And match response.email == testEmail
     And match response.createdAt == '#string'
     * def customerId = response.id
 
@@ -30,15 +33,16 @@ Feature: Customer API Tests
     Then status 400
 
   Scenario: Create customer with duplicate email returns 409
-    # First, create a customer
+    # First, create a customer with unique email
+    * def duplicateEmail = 'duplicate-' + uuid() + '@karate-test.com'
     Given path customersPath
-    And request { firstName: 'Jane', lastName: 'Smith', email: 'duplicate@karate-test.com' }
+    And request { firstName: 'Jane', lastName: 'Smith', email: '#(duplicateEmail)' }
     When method post
     Then status 201
 
     # Try to create another with same email
     Given path customersPath
-    And request { firstName: 'Another', lastName: 'User', email: 'duplicate@karate-test.com' }
+    And request { firstName: 'Another', lastName: 'User', email: '#(duplicateEmail)' }
     When method post
     Then status 409
     And match response.message contains 'already exists'
@@ -46,8 +50,9 @@ Feature: Customer API Tests
   @smoke
   Scenario: Get customer by ID
     # First, create a customer
+    * def testEmail = 'gettest-' + uuid() + '@karate-test.com'
     Given path customersPath
-    And request { firstName: 'GetTest', lastName: 'Customer', email: 'gettest@karate-test.com' }
+    And request { firstName: 'GetTest', lastName: 'Customer', email: '#(testEmail)' }
     When method post
     Then status 201
     * def customerId = response.id
@@ -59,7 +64,7 @@ Feature: Customer API Tests
     And match response.id == customerId
     And match response.firstName == 'GetTest'
     And match response.lastName == 'Customer'
-    And match response.email == 'gettest@karate-test.com'
+    And match response.email == testEmail
 
   Scenario: Get non-existent customer returns 404
     Given path customersPath, 99999
@@ -72,12 +77,12 @@ Feature: Customer API Tests
   Scenario: Get all customers with pagination
     # Create some customers first
     Given path customersPath
-    And request { firstName: 'Page1', lastName: 'User1', email: 'page1user1@karate-test.com' }
+    And request { firstName: 'Page1', lastName: 'User1', email: '#("page1user1-" + uuid() + "@karate-test.com")' }
     When method post
     Then status 201
 
     Given path customersPath
-    And request { firstName: 'Page1', lastName: 'User2', email: 'page1user2@karate-test.com' }
+    And request { firstName: 'Page1', lastName: 'User2', email: '#("page1user2-" + uuid() + "@karate-test.com")' }
     When method post
     Then status 201
 
@@ -95,15 +100,16 @@ Feature: Customer API Tests
 
   Scenario: Update customer successfully
     # First, create a customer
+    * def updateEmail = 'update-' + uuid() + '@karate-test.com'
     Given path customersPath
-    And request { firstName: 'Original', lastName: 'Name', email: 'update@karate-test.com' }
+    And request { firstName: 'Original', lastName: 'Name', email: '#(updateEmail)' }
     When method post
     Then status 201
     * def customerId = response.id
 
     # Update the customer
     Given path customersPath, customerId
-    And request { firstName: 'Updated', lastName: 'Customer', email: 'update@karate-test.com' }
+    And request { firstName: 'Updated', lastName: 'Customer', email: '#(updateEmail)' }
     When method put
     Then status 200
     And match response.firstName == 'Updated'
@@ -111,21 +117,23 @@ Feature: Customer API Tests
 
   Scenario: Update customer to use existing email returns 409
     # Create first customer
+    * def firstEmail = 'first-' + uuid() + '@karate-test.com'
+    * def secondEmail = 'second-' + uuid() + '@karate-test.com'
     Given path customersPath
-    And request { firstName: 'First', lastName: 'Customer', email: 'first@karate-test.com' }
+    And request { firstName: 'First', lastName: 'Customer', email: '#(firstEmail)' }
     When method post
     Then status 201
     * def firstCustomerId = response.id
 
     # Create second customer
     Given path customersPath
-    And request { firstName: 'Second', lastName: 'Customer', email: 'second@karate-test.com' }
+    And request { firstName: 'Second', lastName: 'Customer', email: '#(secondEmail)' }
     When method post
     Then status 201
 
     # Try to update first customer to use second's email
     Given path customersPath, firstCustomerId
-    And request { firstName: 'First', lastName: 'Customer', email: 'second@karate-test.com' }
+    And request { firstName: 'First', lastName: 'Customer', email: '#(secondEmail)' }
     When method put
     Then status 409
 
@@ -138,7 +146,7 @@ Feature: Customer API Tests
   Scenario: Delete customer successfully
     # First, create a customer
     Given path customersPath
-    And request { firstName: 'ToDelete', lastName: 'Customer', email: 'delete@karate-test.com' }
+    And request { firstName: 'ToDelete', lastName: 'Customer', email: '#("delete-" + uuid() + "@karate-test.com")' }
     When method post
     Then status 201
     * def customerId = response.id
